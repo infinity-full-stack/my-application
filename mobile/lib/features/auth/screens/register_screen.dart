@@ -36,7 +36,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'role': 'user',
       });
       if (mounted) {
-        context.push('/verify-email', extra: _emailCtrl.text.trim());
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Ro\'yxatdan o\'tdingiz! Endi kiring.'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ));
+        context.go('/login');
       }
     } catch (e) {
       if (mounted) {

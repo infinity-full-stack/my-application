@@ -29,40 +29,33 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered",
             )
-        # Unverified — resend code
-        code = generate_verification_code()
-        existing.verification_code = code
-        existing.verification_expires = datetime.now(timezone.utc) + timedelta(
-            minutes=VERIFICATION_EXPIRE_MINUTES
-        )
+        # Unverified — auto verify and return token
+        existing.is_verified = True
+        existing.verification_code = None
+        existing.verification_expires = None
         await db.flush()
-        await send_verification_email(existing.email, existing.name, code)
+        await db.refresh(existing)
+        token = create_access_token({"sub": str(existing.id), "role": existing.role})
         return RegisterResponse(
-            message="Verification code resent to your email",
+            message="Registration successful. You can now login.",
             email=existing.email,
         )
 
-    # New user — create unverified
-    code = generate_verification_code()
-    expires = datetime.now(timezone.utc) + timedelta(minutes=VERIFICATION_EXPIRE_MINUTES)
-
+    # New user — create as already verified (skip email verification)
     user = User(
         name=data.name,
         email=data.email,
         password=hash_password(data.password),
         role=data.role,
-        is_verified=False,
-        verification_code=code,
-        verification_expires=expires,
+        is_verified=True,
+        verification_code=None,
+        verification_expires=None,
     )
     db.add(user)
     await db.flush()
 
-    # Send email (non-blocking — if fails, user can resend)
-    await send_verification_email(data.email, data.name, code)
-
     return RegisterResponse(
-        message="Registration successful. Please check your email for the verification code.",
+        message="Registration successful. You can now login.",
         email=data.email,
     )
 
