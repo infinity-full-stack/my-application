@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:2006@localhost:5432/master_scan")
 
     # Auth
-    SECRET_KEY: str
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "master-scan-super-secret-key-change-in-production-2024")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
 
     # Google Maps
-    GOOGLE_MAPS_API_KEY: str
+    GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY", "")
 
     # Email
     SMTP_HOST: str = "smtp.gmail.com"
