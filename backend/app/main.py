@@ -1,9 +1,7 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.core.database import create_tables, get_db
+from app.core.database import create_tables
 from app.routers import auth, scan, stores, parts, maps
 from app.admin.router import router as admin_router
 
@@ -45,16 +43,3 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
-
-@app.post("/api/setup-admin")
-async def setup_admin(email: str, db: AsyncSession = Depends(get_db)):
-    """One-time: make a user admin by email"""
-    from app.models.user import User, UserRole
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-    if not user:
-        return {"error": "User not found"}
-    user.role = UserRole.ADMIN
-    await db.flush()
-    return {"message": f"{email} is now admin"}
