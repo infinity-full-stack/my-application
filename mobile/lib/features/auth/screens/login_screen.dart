@@ -26,10 +26,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.initState();
     _loadSaved();
     _emailFocus.addListener(() {
+      if (!mounted) return;
       if (_emailFocus.hasFocus && _savedEmail != null) {
         setState(() => _showSavedDropdown = true);
       } else {
-        Future.delayed(const Duration(milliseconds: 150), () {
+        Future.delayed(const Duration(milliseconds: 200), () {
           if (mounted) setState(() => _showSavedDropdown = false);
         });
       }

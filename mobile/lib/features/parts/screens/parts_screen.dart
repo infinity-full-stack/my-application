@@ -60,12 +60,19 @@ class _PartsScreenState extends State<PartsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Qidiruv',
-            style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+        backgroundColor: bg,
+        title: Text('Qidiruv',
+            style: TextStyle(fontWeight: FontWeight.w700, color: txt)),
       ),
       body: Column(
         children: [
@@ -73,28 +80,18 @@ class _PartsScreenState extends State<PartsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: TextField(
               controller: _searchCtrl,
+              style: TextStyle(color: txt),
               decoration: InputDecoration(
                 hintText: 'Do\'kon nomi yoki manzilini kiriting...',
-                prefixIcon: const Icon(Icons.search_rounded,
-                    color: AppTheme.textSecondary),
+                prefixIcon: Icon(Icons.search_rounded, color: txtSec),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
+                        icon: Icon(Icons.clear_rounded, color: txtSec),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _search = '');
                         })
                     : null,
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
               ),
               onChanged: (v) => setState(() => _search = v),
             ),
@@ -106,10 +103,12 @@ class _PartsScreenState extends State<PartsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               children: [
                 _Chip(label: 'Barchasi', selected: _selectedCat.isEmpty,
+                    isDark: isDark, surf: surf, brd: brd,
                     onTap: () => setState(() => _selectedCat = '')),
                 ..._catLabels.entries.map((e) => _Chip(
                   label: e.value,
                   selected: _selectedCat == e.key,
+                  isDark: isDark, surf: surf, brd: brd,
                   onTap: () => setState(() =>
                       _selectedCat = _selectedCat == e.key ? '' : e.key),
                 )),
@@ -125,10 +124,10 @@ class _PartsScreenState extends State<PartsScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.search_off_rounded,
-                                size: 64, color: Colors.grey.shade300),
+                                size: 64, color: txtSec),
                             const SizedBox(height: 12),
-                            const Text('Do\'kon topilmadi',
-                                style: TextStyle(color: AppTheme.textSecondary)),
+                            Text('Do\'kon topilmadi',
+                                style: TextStyle(color: txtSec)),
                           ],
                         ),
                       )
@@ -137,8 +136,11 @@ class _PartsScreenState extends State<PartsScreen> {
                         child: ListView.builder(
                           padding: const EdgeInsets.all(12),
                           itemCount: _filtered.length,
-                          itemBuilder: (ctx, i) =>
-                              _StoreCard(store: _filtered[i]),
+                          itemBuilder: (ctx, i) => _StoreCard(
+                            store: _filtered[i],
+                            isDark: isDark, surf: surf,
+                            txt: txt, txtSec: txtSec, brd: brd,
+                          ),
                         ),
                       ),
           ),
@@ -151,8 +153,14 @@ class _PartsScreenState extends State<PartsScreen> {
 class _Chip extends StatelessWidget {
   final String label;
   final bool selected;
+  final bool isDark;
+  final Color surf, brd;
   final VoidCallback onTap;
-  const _Chip({required this.label, required this.selected, required this.onTap});
+
+  const _Chip({
+    required this.label, required this.selected, required this.onTap,
+    required this.isDark, required this.surf, required this.brd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -163,14 +171,14 @@ class _Chip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         decoration: BoxDecoration(
           gradient: selected ? AppTheme.primaryGradient : null,
-          color: selected ? null : Colors.white,
+          color: selected ? null : surf,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-              color: selected ? Colors.transparent : AppTheme.border),
+          border: Border.all(color: selected ? Colors.transparent : brd),
         ),
         child: Text(label,
             style: TextStyle(
-              color: selected ? Colors.white : AppTheme.textSecondary,
+              color: selected ? Colors.white
+                  : (isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary),
               fontSize: 12, fontWeight: FontWeight.w500,
             )),
       ),
@@ -180,7 +188,14 @@ class _Chip extends StatelessWidget {
 
 class _StoreCard extends StatelessWidget {
   final Map<String, dynamic> store;
-  const _StoreCard({required this.store});
+  final bool isDark;
+  final Color surf, txt, txtSec, brd;
+
+  const _StoreCard({
+    required this.store, required this.isDark,
+    required this.surf, required this.txt,
+    required this.txtSec, required this.brd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -191,9 +206,13 @@ class _StoreCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: surf,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
+          border: Border.all(color: brd),
+          boxShadow: isDark ? [] : [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8, offset: const Offset(0, 2)),
+          ],
         ),
         child: Row(
           children: [
@@ -212,13 +231,13 @@ class _StoreCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(store['name'] ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.w700,
-                          fontSize: 14, color: AppTheme.textPrimary)),
+                      style: TextStyle(fontWeight: FontWeight.w700,
+                          fontSize: 14, color: txt)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.secondary.withValues(alpha: 0.1),
+                      color: AppTheme.secondary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(catLabel,
@@ -229,13 +248,11 @@ class _StoreCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_rounded,
-                            size: 11, color: AppTheme.textSecondary),
+                        Icon(Icons.location_on_rounded, size: 11, color: txtSec),
                         const SizedBox(width: 3),
                         Expanded(
                           child: Text(store['address'],
-                              style: const TextStyle(fontSize: 11,
-                                  color: AppTheme.textSecondary),
+                              style: TextStyle(fontSize: 11, color: txtSec),
                               maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       ],
@@ -244,8 +261,7 @@ class _StoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: AppTheme.textSecondary),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: txtSec),
           ],
         ),
       ),
