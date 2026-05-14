@@ -2,68 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 
-// Qism kategoriyasi bo'yicha qayerda ishlatilishi
 const Map<String, List<String>> categoryUsages = {
-  'Dvigatel': [
-    'Dvigatel yog\'ini almashtirish vaqtida',
-    'Dvigatel ta\'mirlash paytida',
-    'Texnik ko\'rik o\'tkazishda',
-  ],
-  'Tormoz': [
-    'Tormoz tizimini tekshirishda',
-    'Tormoz kolodkalarini almashtirishda',
-    'Xavfsizlik tekshiruvida',
-  ],
-  'Osma': [
-    'Yo\'l sifati yomon bo\'lganda tekshirishda',
-    'Amortizator almashtirishda',
-    'Texnik ko\'rikda',
-  ],
-  'Elektr': [
-    'Elektr tizimi nosozligida',
-    'Akkumulator tekshirishda',
-    'Diagnostika o\'tkazishda',
-  ],
-  'Kuzov': [
-    'Kuzov ta\'mirlashda',
-    'Bo\'yash ishlarida',
-    'Avariyadan keyin ta\'mirlashda',
-  ],
-  'Transmissiya': [
-    'Moy almashtirish paytida',
-    'Uzatmalar qutisi ta\'mirlashda',
-    'Texnik ko\'rikda',
-  ],
-  'Sovutish': [
-    'Dvigatel qizib ketganda',
-    'Antifriz almashtirishda',
-    'Yozgi mavsumda tekshirishda',
-  ],
-  'Egzoz': [
-    'Egzoz tizimi tekshirishda',
-    'Shovqin ko\'paysa',
-    'Texnik ko\'rikda',
-  ],
-  'Yoqilgi': [
-    'Yoqilgi tizimi ta\'mirlashda',
-    'Filtr almashtirishda',
-    'Iqtisodiyot muammolarida',
-  ],
-  'Tyuning': [
-    'Avtomobil kuchini oshirishda',
-    'Tashqi ko\'rinishni yaxshilashda',
-    'Sport haydashga tayyorlashda',
-  ],
-  'Salon': [
-    'Salon ta\'mirlashda',
-    'Aksessuarlar o\'rnatishda',
-    'Qulaylikni oshirishda',
-  ],
-  'Boyoq': [
-    'Kuzov bo\'yashda',
-    'Qoplama qo\'yishda',
-    'Tonirovka qilishda',
-  ],
+  'Dvigatel': ['Dvigatel yog\'ini almashtirish vaqtida', 'Dvigatel ta\'mirlash paytida', 'Texnik ko\'rik o\'tkazishda'],
+  'Tormoz': ['Tormoz tizimini tekshirishda', 'Tormoz kolodkalarini almashtirishda', 'Xavfsizlik tekshiruvida'],
+  'Osma': ['Yo\'l sifati yomon bo\'lganda tekshirishda', 'Amortizator almashtirishda', 'Texnik ko\'rikda'],
+  'Elektr': ['Elektr tizimi nosozligida', 'Akkumulator tekshirishda', 'Diagnostika o\'tkazishda'],
+  'Kuzov': ['Kuzov ta\'mirlashda', 'Bo\'yash ishlarida', 'Avariyadan keyin ta\'mirlashda'],
+  'Transmissiya': ['Moy almashtirish paytida', 'Uzatmalar qutisi ta\'mirlashda', 'Texnik ko\'rikda'],
+  'Sovutish': ['Dvigatel qizib ketganda', 'Antifriz almashtirishda', 'Yozgi mavsumda tekshirishda'],
+  'Egzoz': ['Egzoz tizimi tekshirishda', 'Shovqin ko\'paysa', 'Texnik ko\'rikda'],
+  'Yoqilgi': ['Yoqilgi tizimi ta\'mirlashda', 'Filtr almashtirishda', 'Iqtisodiyot muammolarida'],
+  'Tyuning': ['Avtomobil kuchini oshirishda', 'Tashqi ko\'rinishni yaxshilashda', 'Sport haydashga tayyorlashda'],
+  'Salon': ['Salon ta\'mirlashda', 'Aksessuarlar o\'rnatishda', 'Qulaylikni oshirishda'],
+  'Boyoq': ['Kuzov bo\'yashda', 'Qoplama qo\'yishda', 'Tonirovka qilishda'],
 };
 
 class ScanResultScreen extends StatelessWidget {
@@ -84,8 +35,13 @@ class ScanResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final confidence =
-        (result['confidence_score'] as num?)?.toDouble() ?? 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
+    final confidence = (result['confidence_score'] as num?)?.toDouble() ?? 0.0;
     final percent = (confidence * 100).toStringAsFixed(0);
     final category = result['category'] as String? ?? '';
     final usages = categoryUsages[category] ?? [
@@ -107,19 +63,17 @@ class ScanResultScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Asosiy karta
+            // ── Asosiy karta ─────────────────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: surf,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
+                border: Border.all(color: brd),
+                boxShadow: isDark ? [] : [
+                  BoxShadow(color: AppTheme.primary.withValues(alpha: 0.06),
+                      blurRadius: 16, offset: const Offset(0, 4)),
                 ],
               ),
               child: Column(
@@ -130,58 +84,46 @@ class ScanResultScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: AppTheme.primaryGradientVertical,
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.build,
-                            color: AppTheme.primary, size: 28),
+                        child: const Icon(Icons.build_rounded,
+                            color: Colors.white, size: 26),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              result['part_name'] ?? 'Noma\'lum qism',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (category.isNotEmpty)
+                            Text(result['part_name'] ?? 'Noma\'lum qism',
+                                style: TextStyle(fontSize: 20,
+                                    fontWeight: FontWeight.w800, color: txt)),
+                            if (category.isNotEmpty) ...[
+                              const SizedBox(height: 4),
                               Container(
-                                margin: const EdgeInsets.only(top: 4),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primary
-                                      .withValues(alpha: 0.1),
+                                  color: AppTheme.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: Text(
-                                  category,
-                                  style: const TextStyle(
-                                    color: AppTheme.primary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                                child: Text(category,
+                                    style: const TextStyle(
+                                        color: AppTheme.primary,
+                                        fontSize: 12, fontWeight: FontWeight.w600)),
                               ),
+                            ],
                           ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text('Tavsif',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text('Tavsif', style: TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 13, color: txt)),
                   const SizedBox(height: 6),
-                  Text(
-                    result['description'] ?? 'Tavsif mavjud emas',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, height: 1.5),
-                  ),
+                  Text(result['description'] ?? 'Tavsif mavjud emas',
+                      style: TextStyle(color: txtSec, height: 1.5, fontSize: 13)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -190,26 +132,24 @@ class ScanResultScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           child: LinearProgressIndicator(
                             value: confidence,
-                            backgroundColor: Colors.grey.shade200,
+                            backgroundColor: isDark
+                                ? AppTheme.darkBorder
+                                : Colors.grey.shade200,
                             valueColor: AlwaysStoppedAnimation(
                                 _confidenceColor(confidence)),
                             minHeight: 8,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('$percent%',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _confidenceColor(confidence),
-                              )),
+                          Text('$percent%', style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: _confidenceColor(confidence))),
                           Text(_confidenceText(confidence),
-                              style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppTheme.textSecondary)),
+                              style: TextStyle(fontSize: 10, color: txtSec)),
                         ],
                       ),
                     ],
@@ -217,78 +157,83 @@ class ScanResultScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-            // Qayerda ishlatilishi
+            // ── Qayerda ishlatiladi ───────────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: surf,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFEEEEEE)),
+                border: Border.all(color: brd),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.info_outline,
-                          color: AppTheme.primary, size: 18),
-                      SizedBox(width: 8),
+                      const IconBox(
+                        icon: Icons.info_outline_rounded,
+                        gradient: AppTheme.cyanGradient,
+                        size: 32, iconSize: 16,
+                      ),
+                      const SizedBox(width: 10),
                       Text('Qayerda ishlatiladi',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 14)),
+                          style: TextStyle(fontWeight: FontWeight.w700,
+                              fontSize: 14, color: txt)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   ...usages.map((u) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.check_circle,
-                                size: 16, color: AppTheme.secondary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                                child: Text(u,
-                                    style: const TextStyle(
-                                        fontSize: 13, height: 1.4))),
-                          ],
-                        ),
-                      )),
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.check_circle_rounded,
+                            size: 16, color: AppTheme.secondary),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(u,
+                            style: TextStyle(fontSize: 13,
+                                height: 1.4, color: txt))),
+                      ],
+                    ),
+                  )),
                 ],
               ),
             ),
             const SizedBox(height: 16),
 
-            // Tugmalar
-            ElevatedButton.icon(
-              onPressed: () =>
-                  context.go('/stores'),
-              icon: const Icon(Icons.search),
-              label: const Text('Do\'konlarda qidirish'),
+            // ── Tugmalar ─────────────────────────────────────────────
+            GradientButton(
+              text: 'Do\'konlarda qidirish',
+              icon: Icons.search_rounded,
+              onPressed: () => context.go('/stores'),
             ),
             const SizedBox(height: 10),
-            OutlinedButton.icon(
+            GradientButton(
+              text: 'Yaqin do\'konlarni topish',
+              icon: Icons.map_rounded,
+              gradient: AppTheme.cyanGradient,
               onPressed: () => context.go('/map'),
-              icon: const Icon(Icons.map_outlined),
-              label: const Text('Yaqin do\'konlarni topish'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
             ),
             const SizedBox(height: 10),
-            TextButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text('Boshqa qismni skanerlash'),
-              style: TextButton.styleFrom(
-                minimumSize: const Size(double.infinity, 52),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: () => context.go('/'),
+                icon: Icon(Icons.camera_alt_outlined, color: txtSec),
+                label: Text('Boshqa qismni skanerlash',
+                    style: TextStyle(color: txtSec)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: brd),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

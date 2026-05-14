@@ -66,7 +66,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('✅ "$name" tasdiqlandi'),
           backgroundColor: AppTheme.secondary,
-          behavior: SnackBarBehavior.floating,
         ));
         _loadPendingStores();
         _loadStats();
@@ -76,7 +75,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Xatolik: $e'),
           backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
         ));
       }
     }
@@ -86,26 +84,16 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
     if (!mounted) return;
     final confirm = await showDialog<bool>(
       context: context,
-      barrierColor: Colors.black54,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Rad etish', style: TextStyle(fontWeight: FontWeight.w700)),
         content: Text('"$name" so\'rovini rad etasizmi?'),
         actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Bekor')),
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Bekor'),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.error,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Rad etish',
-                  style: TextStyle(color: Colors.white)),
-            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Rad etish',
+                style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -117,7 +105,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('❌ "$name" rad etildi'),
           backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
         ));
         _loadPendingStores();
         _loadStats();
@@ -127,18 +114,19 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final txt = Theme.of(context).colorScheme.onSurface;
     final pendingCount = _pendingStores.length;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        title: const Text('Admin Panel',
-            style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+        backgroundColor: bg,
+        title: Text('Admin Panel',
+            style: TextStyle(fontWeight: FontWeight.w700, color: txt)),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primary,
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.textSecondary,
           tabs: [
             const Tab(text: 'Dashboard'),
             Tab(
@@ -149,7 +137,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                   if (pendingCount > 0) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1),
                       decoration: BoxDecoration(
                         gradient: AppTheme.primaryGradient,
                         borderRadius: BorderRadius.circular(10),
@@ -168,68 +157,73 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildDashboard(), _buildPending(), _buildUsers()],
+        children: [
+          _buildDashboard(isDark),
+          _buildPending(isDark),
+          _buildUsers(isDark),
+        ],
       ),
     );
   }
 
-  Widget _buildDashboard() {
+  Widget _buildDashboard(bool isDark) {
     if (_loadingStats) return const Center(child: CircularProgressIndicator());
     if (_stats == null) return const Center(child: Text('Ma\'lumot yo\'q'));
+
+    final surf = Theme.of(context).colorScheme.surface;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+
     final items = [
       {'label': 'Foydalanuvchilar', 'value': '${_stats!['total_users']}',
-        'icon': Icons.people_rounded, 'color': AppTheme.primary},
+        'icon': Icons.people_rounded, 'gradient': AppTheme.primaryGradientVertical},
       {'label': 'Jami do\'konlar', 'value': '${_stats!['total_stores']}',
-        'icon': Icons.store_rounded, 'color': AppTheme.secondary},
+        'icon': Icons.store_rounded, 'gradient': AppTheme.emeraldGradient},
       {'label': 'Tasdiqlangan', 'value': '${_stats!['verified_stores']}',
-        'icon': Icons.verified_rounded, 'color': AppTheme.secondary},
+        'icon': Icons.verified_rounded, 'gradient': AppTheme.emeraldGradient},
       {'label': 'Kutilmoqda', 'value': '${_stats!['pending_stores']}',
-        'icon': Icons.pending_rounded, 'color': AppTheme.warning},
+        'icon': Icons.pending_rounded, 'gradient': AppTheme.amberGradient},
       {'label': 'Skanerlar', 'value': '${_stats!['total_scans']}',
-        'icon': Icons.document_scanner_rounded, 'color': AppTheme.primary},
+        'icon': Icons.document_scanner_rounded, 'gradient': AppTheme.cyanGradient},
       {'label': 'Qismlar', 'value': '${_stats!['total_parts']}',
-        'icon': Icons.build_rounded, 'color': const Color(0xFF8B5CF6)},
+        'icon': Icons.build_rounded, 'gradient': const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFFA855F7)])},
     ];
+
     return RefreshIndicator(
       onRefresh: _loadStats,
       child: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, crossAxisSpacing: 12,
-          mainAxisSpacing: 12, childAspectRatio: 1.4,
+          mainAxisSpacing: 12, childAspectRatio: 1.3,
         ),
         itemCount: items.length,
         itemBuilder: (ctx, i) {
           final item = items[i];
-          final color = item['color'] as Color;
+          final gradient = item['gradient'] as LinearGradient;
+          final color = gradient.colors.first;
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
+              color: surf,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: brd),
             ),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(item['icon'] as IconData, color: color, size: 20),
-                ),
+                IconBox(icon: item['icon'] as IconData,
+                    gradient: gradient, size: 38, iconSize: 18),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(item['value'] as String,
-                        style: TextStyle(fontSize: 26,
+                        style: TextStyle(fontSize: 28,
                             fontWeight: FontWeight.w800, color: color)),
                     Text(item['label'] as String,
-                        style: const TextStyle(fontSize: 11,
-                            color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 11, color: txtSec)),
                   ],
                 ),
               ],
@@ -240,21 +234,28 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
     );
   }
 
-  Widget _buildPending() {
+  Widget _buildPending(bool isDark) {
     if (_loadingStores) return const Center(child: CircularProgressIndicator());
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
     if (_pendingStores.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline_rounded, size: 64, color: AppTheme.secondary),
-            SizedBox(height: 12),
+            const Icon(Icons.check_circle_outline_rounded,
+                size: 64, color: AppTheme.secondary),
+            const SizedBox(height: 12),
             Text('Kutilayotgan so\'rovlar yo\'q',
-                style: TextStyle(color: AppTheme.textSecondary)),
+                style: TextStyle(color: txtSec)),
           ],
         ),
       );
     }
+
     return RefreshIndicator(
       onRefresh: _loadPendingStores,
       child: ListView.builder(
@@ -266,39 +267,33 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: surf,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
+              border: Border.all(color: brd),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(
+                    const IconBox(icon: Icons.store_rounded,
                         gradient: AppTheme.primaryGradientVertical,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.store_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 10),
+                        size: 42, iconSize: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(s['name'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w700,
-                              fontSize: 15, color: AppTheme.textPrimary)),
+                          style: TextStyle(fontWeight: FontWeight.w700,
+                              fontSize: 15, color: txt)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                _infoRow(Icons.category_rounded, s['store_type'] ?? ''),
-                _infoRow(Icons.location_on_rounded, s['address'] ?? ''),
-                _infoRow(Icons.phone_rounded, s['phone'] ?? ''),
+                _infoRow(Icons.category_rounded, s['store_type'] ?? '', txtSec),
+                _infoRow(Icons.location_on_rounded, s['address'] ?? '', txtSec),
+                _infoRow(Icons.phone_rounded, s['phone'] ?? '', txtSec),
                 if (s['applicant_name'] != null)
                   _infoRow(Icons.person_rounded,
-                      '${s['applicant_name']} • ${s['applicant_email']}'),
+                      '${s['applicant_name']} • ${s['applicant_email']}', txtSec),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -334,9 +329,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
-                            ),
+                            gradient: AppTheme.emeraldGradient,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Row(
@@ -363,8 +356,13 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
     );
   }
 
-  Widget _buildUsers() {
+  Widget _buildUsers(bool isDark) {
     if (_loadingUsers) return const Center(child: CircularProgressIndicator());
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
     return RefreshIndicator(
       onRefresh: _loadUsers,
       child: ListView.builder(
@@ -381,9 +379,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: surf,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
+              border: Border.all(color: brd),
             ),
             child: Row(
               children: [
@@ -407,18 +405,16 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(u['name'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary)),
+                          style: TextStyle(fontWeight: FontWeight.w600, color: txt)),
                       Text(u['email'] ?? '',
-                          style: const TextStyle(fontSize: 12,
-                              color: AppTheme.textSecondary)),
+                          style: TextStyle(fontSize: 12, color: txtSec)),
                     ],
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(roleLabel,
@@ -433,14 +429,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
     );
   }
 
-  Widget _infoRow(IconData icon, String text) => Padding(
+  Widget _infoRow(IconData icon, String text, Color txtSec) => Padding(
     padding: const EdgeInsets.only(top: 4),
     child: Row(
       children: [
-        Icon(icon, size: 13, color: AppTheme.textSecondary),
+        Icon(icon, size: 13, color: txtSec),
         const SizedBox(width: 6),
         Expanded(child: Text(text,
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
+            style: TextStyle(fontSize: 12, color: txtSec))),
       ],
     ),
   );
