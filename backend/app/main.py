@@ -44,6 +44,20 @@ async def root():
     return {"message": "Master Scan API is running", "version": "1.0.0"}
 
 
-@app.get("/health")
+@router.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@router.post("/api/setup-admin")
+async def setup_admin(email: str, db: AsyncSession = Depends(get_db)):
+    """One-time endpoint to make a user admin"""
+    from sqlalchemy import select
+    from app.models.user import User, UserRole
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        return {"error": "User not found"}
+    user.role = UserRole.ADMIN
+    await db.flush()
+    return {"message": f"{email} is now admin"}
