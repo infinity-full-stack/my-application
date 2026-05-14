@@ -15,13 +15,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _emailFocus = FocusNode();
   bool _obscure = true;
-  List<Map<String, String>> _savedAccounts = [];
+  bool _showSavedDropdown = false;
+  String? _savedEmail;
+  String? _savedPass;
 
   @override
   void initState() {
     super.initState();
     _loadSaved();
+    _emailFocus.addListener(() {
+      if (_emailFocus.hasFocus && _savedEmail != null) {
+        setState(() => _showSavedDropdown = true);
+      } else {
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (mounted) setState(() => _showSavedDropdown = false);
+        });
+      }
+    });
   }
 
   Future<void> _loadSaved() async {
@@ -30,7 +42,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final pass = prefs.getString('last_pass');
     if (email != null && mounted) {
       setState(() {
-        _savedAccounts = [{'email': email, 'pass': pass ?? ''}];
+        _savedEmail = email;
+        _savedPass = pass ?? '';
       });
     }
   }
@@ -47,125 +60,86 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(ref.read(authProvider).error ?? 'Kirish muvaffaqiyatsiz'),
         backgroundColor: AppTheme.error,
-        behavior: SnackBarBehavior.floating,
       ));
     }
+  }
+
+  void _fillSaved() {
+    _emailCtrl.text = _savedEmail!;
+    _passCtrl.text = _savedPass!;
+    setState(() => _showSavedDropdown = false);
+    _emailFocus.unfocus();
   }
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _emailFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authProvider).isLoading;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
-              const SizedBox(height: 48),
-              // Logo
+              const SizedBox(height: 52),
+
+              // ── Logo ──────────────────────────────────────────────────
               Container(
-                width: 80, height: 80,
+                width: 84, height: 84,
                 decoration: BoxDecoration(
                   gradient: AppTheme.primaryGradientVertical,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.35),
-                      blurRadius: 20, offset: const Offset(0, 8),
+                      color: AppTheme.primary.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: const Icon(Icons.document_scanner_rounded,
-                    color: Colors.white, size: 38),
+                    color: Colors.white, size: 40),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               ShaderMask(
-                shaderCallback: (bounds) =>
-                    AppTheme.primaryGradient.createShader(bounds),
+                shaderCallback: (b) => AppTheme.primaryGradient.createShader(b),
                 child: const Text('Master Scan',
-                    style: TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.w800,
-                        color: Colors.white, letterSpacing: -0.5)),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800,
+                        color: Colors.white, letterSpacing: -0.8)),
               ),
-              const Text('AI Avto Ehtiyot Qismlar Bozori',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-              const SizedBox(height: 32),
+              const SizedBox(height: 4),
+              Text('AI Avto Ehtiyot Qismlar Bozori',
+                  style: TextStyle(color: txtSec, fontSize: 14)),
+              const SizedBox(height: 36),
 
-              // Saqlangan hisob
-              if (_savedAccounts.isNotEmpty) ...[
-                GestureDetector(
-                  onTap: () {
-                    _emailCtrl.text = _savedAccounts[0]['email']!;
-                    _passCtrl.text = _savedAccounts[0]['pass']!;
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 10, offset: const Offset(0, 2)),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44, height: 44,
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradientVertical,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _savedAccounts[0]['email']![0].toUpperCase(),
-                              style: const TextStyle(color: Colors.white,
-                                  fontWeight: FontWeight.w700, fontSize: 18),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Oxirgi hisob',
-                                  style: TextStyle(
-                                      fontSize: 12, color: AppTheme.textSecondary)),
-                              Text(_savedAccounts[0]['email']!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textPrimary)),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.arrow_forward_ios_rounded,
-                            size: 14, color: AppTheme.textSecondary),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Form karta
+              // ── Form ──────────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: surf,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 20, offset: const Offset(0, 4)),
+                  border: Border.all(color: brd),
+                  boxShadow: isDark ? [] : [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.07),
+                      blurRadius: 24,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
                 ),
                 child: Form(
@@ -173,42 +147,127 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Kirish',
+                      Text('Kirish',
                           style: TextStyle(fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.textPrimary)),
-                      const Text('Hisobingizga kiring',
-                          style: TextStyle(color: AppTheme.textSecondary,
-                              fontSize: 13)),
-                      const SizedBox(height: 20),
-                      const Text('Email',
+                              fontWeight: FontWeight.w800, color: txt)),
+                      Text('Hisobingizga kiring',
+                          style: TextStyle(color: txtSec, fontSize: 13)),
+                      const SizedBox(height: 22),
+
+                      // Email with saved dropdown
+                      Text('Email',
                           style: TextStyle(fontWeight: FontWeight.w600,
-                              fontSize: 13, color: AppTheme.textPrimary)),
+                              fontSize: 13, color: txt)),
                       const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _emailCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          hintText: 'email@example.com',
-                        ),
-                        validator: (v) => v == null || !v.contains('@')
-                            ? 'To\'g\'ri email kiriting' : null,
+                      Stack(
+                        children: [
+                          TextFormField(
+                            controller: _emailCtrl,
+                            focusNode: _emailFocus,
+                            keyboardType: TextInputType.emailAddress,
+                            style: TextStyle(color: txt),
+                            decoration: InputDecoration(
+                              hintText: 'email@example.com',
+                              prefixIcon: Icon(Icons.email_outlined,
+                                  color: txtSec, size: 20),
+                              suffixIcon: _savedEmail != null
+                                  ? Icon(Icons.expand_more_rounded,
+                                      color: AppTheme.primary, size: 20)
+                                  : null,
+                            ),
+                            validator: (v) => v == null || !v.contains('@')
+                                ? 'To\'g\'ri email kiriting' : null,
+                          ),
+                          if (_showSavedDropdown && _savedEmail != null)
+                            Positioned(
+                              top: 54,
+                              left: 0, right: 0,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: surf,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primary.withValues(alpha: 0.15),
+                                        blurRadius: 16,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: InkWell(
+                                    onTap: _fillSaved,
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(14),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 40, height: 40,
+                                            decoration: BoxDecoration(
+                                              gradient: AppTheme.primaryGradientVertical,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                _savedEmail![0].toUpperCase(),
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 16),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text('Saqlangan hisob',
+                                                    style: TextStyle(
+                                                        fontSize: 11,
+                                                        color: txtSec)),
+                                                Text(_savedEmail!,
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight.w600,
+                                                        color: txt,
+                                                        fontSize: 13)),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(Icons.arrow_forward_ios_rounded,
+                                              size: 13, color: AppTheme.primary),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 14),
-                      const Text('Parol',
+
+                      Text('Parol',
                           style: TextStyle(fontWeight: FontWeight.w600,
-                              fontSize: 13, color: AppTheme.textPrimary)),
+                              fontSize: 13, color: txt)),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _passCtrl,
                         obscureText: _obscure,
+                        style: TextStyle(color: txt),
                         decoration: InputDecoration(
                           hintText: '••••••••',
+                          prefixIcon: Icon(Icons.lock_outline_rounded,
+                              color: txtSec, size: 20),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscure
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                                size: 20, color: AppTheme.textSecondary),
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 20, color: txtSec),
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
                           ),
@@ -216,9 +275,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         validator: (v) => v == null || v.length < 6
                             ? 'Kamida 6 ta belgi' : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
                       GradientButton(
                         text: 'Kirish',
+                        icon: Icons.login_rounded,
                         onPressed: isLoading ? null : _login,
                         isLoading: isLoading,
                       ),
@@ -226,12 +286,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Hisobingiz yo\'qmi? ',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+                  Text('Hisobingiz yo\'qmi? ',
+                      style: TextStyle(color: txtSec)),
                   GestureDetector(
                     onTap: () => context.go('/register'),
                     child: ShaderMask(
@@ -244,7 +304,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
             ],
           ),
         ),

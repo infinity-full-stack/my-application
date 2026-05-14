@@ -38,7 +38,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Xatolik: ${e.toString()}'),
           backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
         ));
       }
     } finally {
@@ -48,41 +47,62 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: bg,
         elevation: 0,
         title: Row(
           children: [
             Container(
-              width: 32, height: 32,
+              width: 34, height: 34,
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradientVertical,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 8, offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: const Icon(Icons.document_scanner_rounded,
                   color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('AI Skaner',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800,
+                        color: txt, letterSpacing: -0.3)),
                 Text('Qismni aniqlang',
-                    style: TextStyle(fontSize: 11,
-                        color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 11, color: txtSec)),
               ],
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.history_rounded,
-                color: AppTheme.textSecondary),
-            onPressed: () => context.push('/scan-history'),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkSurfaceVariant : AppTheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: brd),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.history_rounded, color: txtSec, size: 20),
+              onPressed: () => context.push('/scan-history'),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            ),
           ),
         ],
       ),
@@ -90,88 +110,128 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Banner
+            // ── Hero Banner ──────────────────────────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradientVertical,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 16, offset: const Offset(0, 6),
+                    color: AppTheme.primary.withValues(alpha: 0.35),
+                    blurRadius: 20, offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text('AI bilan qism aniqlang',
-                      style: TextStyle(color: Colors.white, fontSize: 18,
-                          fontWeight: FontWeight.w700)),
-                  SizedBox(height: 6),
-                  Text('Avtomobil ehtiyot qismining rasmini oling\nva AI uni bir zumda aniqlaydi',
-                      style: TextStyle(color: Colors.white70, fontSize: 13,
-                          height: 1.4)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('AI bilan qism aniqlang',
+                            style: TextStyle(color: Colors.white, fontSize: 18,
+                                fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+                        const SizedBox(height: 6),
+                        Text('Avtomobil ehtiyot qismining rasmini oling\nva AI uni bir zumda aniqlaydi',
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 12, height: 1.5)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 56, height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.auto_awesome_rounded,
+                        color: Colors.white, size: 28),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
 
-            // Kamera / Galereya
+            // ── Pick Cards ───────────────────────────────────────────────
             Row(
               children: [
                 Expanded(child: _PickCard(
                   icon: Icons.camera_alt_rounded,
                   label: 'Kamera',
+                  subtitle: 'Rasm olish',
                   gradient: AppTheme.primaryGradientVertical,
+                  surf: surf, brd: brd, txt: txt, txtSec: txtSec,
                   onTap: () => _pickImage(ImageSource.camera),
                 )),
                 const SizedBox(width: 12),
                 Expanded(child: _PickCard(
                   icon: Icons.photo_library_rounded,
                   label: 'Galereya',
+                  subtitle: 'Rasmdan tanlash',
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+                    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
+                  surf: surf, brd: brd, txt: txt, txtSec: txtSec,
                   onTap: () => _pickImage(ImageSource.gallery),
                 )),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Tanlangan rasm
+            // ── Selected Image ───────────────────────────────────────────
             if (_selectedImage != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.file(_selectedImage!,
-                    height: 220, width: double.infinity, fit: BoxFit.cover),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                      color: AppTheme.primary.withValues(alpha: 0.4), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.15),
+                      blurRadius: 16, offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(_selectedImage!,
+                      height: 220, width: double.infinity,
+                      fit: BoxFit.cover),
+                ),
               ),
               const SizedBox(height: 12),
               GradientButton(
                 text: _isScanning ? 'Aniqlanmoqda...' : 'Qismni aniqlash',
+                icon: Icons.auto_awesome_rounded,
                 onPressed: _isScanning ? null : _scan,
                 isLoading: _isScanning,
               ),
               const SizedBox(height: 8),
-              TextButton(
+              TextButton.icon(
                 onPressed: () => setState(() => _selectedImage = null),
-                child: const Text('Bekor qilish',
-                    style: TextStyle(color: AppTheme.textSecondary)),
+                icon: Icon(Icons.close_rounded, size: 16, color: txtSec),
+                label: Text('Bekor qilish',
+                    style: TextStyle(color: txtSec, fontSize: 13)),
               ),
             ],
 
-            // Maslahatlar
-            const SizedBox(height: 8),
+            // ── Tips ─────────────────────────────────────────────────────
+            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                color: isDark
+                    ? AppTheme.warning.withValues(alpha: 0.08)
+                    : const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.warning.withValues(alpha: isDark ? 0.2 : 0.3),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,39 +241,49 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                       Container(
                         width: 32, height: 32,
                         decoration: BoxDecoration(
-                          color: AppTheme.warning.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: AppTheme.amberGradient,
+                          borderRadius: BorderRadius.circular(9),
                         ),
                         child: const Icon(Icons.lightbulb_rounded,
-                            color: AppTheme.warning, size: 18),
+                            color: Colors.white, size: 17),
                       ),
                       const SizedBox(width: 10),
-                      const Text('Maslahatlar',
+                      Text('Maslahatlar',
                           style: TextStyle(fontWeight: FontWeight.w700,
-                              color: AppTheme.textPrimary)),
+                              color: txt, fontSize: 14)),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  _tip('Rasmni yorug\' joyda oling'),
-                  _tip('Qismni yaqindan suratga oling'),
-                  _tip('Qismning barchasini ko\'rsating'),
+                  const SizedBox(height: 12),
+                  _tip('Rasmni yorug\' joyda oling', isDark),
+                  _tip('Qismni yaqindan suratga oling', isDark),
+                  _tip('Qismning barchasini ko\'rsating', isDark),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _tip(String text) => Padding(
-    padding: const EdgeInsets.only(top: 5),
+  Widget _tip(String text, bool isDark) => Padding(
+    padding: const EdgeInsets.only(top: 6),
     child: Row(
       children: [
-        const Text('• ', style: TextStyle(color: AppTheme.warning,
-            fontWeight: FontWeight.w700)),
-        Text(text, style: const TextStyle(fontSize: 13,
-            color: Color(0xFF92400E))),
+        Container(
+          width: 6, height: 6,
+          decoration: const BoxDecoration(
+            color: AppTheme.warning,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(text, style: TextStyle(
+            fontSize: 13,
+            color: isDark
+                ? AppTheme.warning.withValues(alpha: 0.9)
+                : const Color(0xFF92400E))),
       ],
     ),
   );
@@ -222,39 +292,56 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 class _PickCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String subtitle;
   final LinearGradient gradient;
   final VoidCallback onTap;
+  final Color surf, brd, txt, txtSec;
 
-  const _PickCard({required this.icon, required this.label,
-      required this.gradient, required this.onTap});
+  const _PickCard({
+    required this.icon, required this.label, required this.subtitle,
+    required this.gradient, required this.onTap,
+    required this.surf, required this.brd,
+    required this.txt, required this.txtSec,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: surf,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: brd),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8, offset: const Offset(0, 2)),
+            BoxShadow(
+              color: gradient.colors.first.withValues(alpha: 0.08),
+              blurRadius: 12, offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
           children: [
             Container(
-              width: 52, height: 52,
+              width: 56, height: 56,
               decoration: BoxDecoration(
                 gradient: gradient,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradient.colors.first.withValues(alpha: 0.3),
+                    blurRadius: 12, offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Icon(icon, color: Colors.white, size: 26),
             ),
-            const SizedBox(height: 10),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600,
-                fontSize: 14, color: AppTheme.textPrimary)),
+            const SizedBox(height: 12),
+            Text(label, style: TextStyle(fontWeight: FontWeight.w700,
+                fontSize: 14, color: txt)),
+            const SizedBox(height: 2),
+            Text(subtitle, style: TextStyle(fontSize: 11, color: txtSec)),
           ],
         ),
       ),

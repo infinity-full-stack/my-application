@@ -24,6 +24,9 @@ class HomeScreen extends ConsumerWidget {
     final isAdmin = user?['role']?.toString().toUpperCase() == 'ADMIN';
     final loc = GoRouterState.of(context).matchedLocation;
     final idx = _idx(loc, isAdmin);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surf = Theme.of(context).colorScheme.surface;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
 
     final items = [
       _NavItem(icon: Icons.document_scanner_outlined,
@@ -37,18 +40,26 @@ class HomeScreen extends ConsumerWidget {
       if (isAdmin)
         _NavItem(icon: Icons.admin_panel_settings_outlined,
             activeIcon: Icons.admin_panel_settings_rounded, label: 'Admin'),
-      _NavItem(icon: Icons.person_outlined,
+      _NavItem(icon: Icons.person_outline_rounded,
           activeIcon: Icons.person_rounded, label: 'Profil'),
     ];
+
+    final routes = isAdmin
+        ? ['/', '/stores', '/parts', '/map', '/admin', '/profile']
+        : ['/', '/stores', '/parts', '/map', '/profile'];
 
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 20, offset: const Offset(0, -4)),
+          color: surf,
+          border: Border(top: BorderSide(color: brd, width: 1)),
+          boxShadow: isDark ? [] : [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
           ],
         ),
         child: SafeArea(
@@ -60,15 +71,12 @@ class HomeScreen extends ConsumerWidget {
                 final item = items[i];
                 final selected = idx == i;
                 return GestureDetector(
-                  onTap: () {
-                    final routes = isAdmin
-                        ? ['/', '/stores', '/parts', '/map', '/admin', '/profile']
-                        : ['/', '/stores', '/parts', '/map', '/profile'];
-                    context.go(routes[i]);
-                  },
+                  onTap: () => context.go(routes[i]),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       gradient: selected ? AppTheme.primaryGradient : null,
                       borderRadius: BorderRadius.circular(14),
@@ -78,15 +86,25 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           selected ? item.activeIcon : item.icon,
-                          color: selected ? Colors.white : AppTheme.textSecondary,
+                          color: selected
+                              ? Colors.white
+                              : (isDark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.textSecondary),
                           size: 22,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Text(item.label,
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                              color: selected ? Colors.white : AppTheme.textSecondary,
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                              color: selected
+                                  ? Colors.white
+                                  : (isDark
+                                      ? AppTheme.darkTextSecondary
+                                      : AppTheme.textSecondary),
                             )),
                       ],
                     ),
@@ -105,5 +123,8 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-  const _NavItem({required this.icon, required this.activeIcon, required this.label});
+  const _NavItem(
+      {required this.icon,
+      required this.activeIcon,
+      required this.label});
 }

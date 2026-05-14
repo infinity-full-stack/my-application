@@ -488,17 +488,11 @@ class _AddStoreScreenState extends State<AddStoreScreen> {
                   validator: (v) => v == null || !v.contains('@') ? 'To\'g\'ri email' : null),
 
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _submit,
-                  icon: _isLoading
-                      ? const SizedBox(width: 18, height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.send_rounded),
-                  label: Text(_isLoading ? 'Yuborilmoqda...' : 'Adminga so\'rov yuborish'),
-                ),
+              GradientButton(
+                text: _isLoading ? 'Yuborilmoqda...' : 'Adminga so\'rov yuborish',
+                icon: Icons.send_rounded,
+                onPressed: _isLoading ? null : _submit,
+                isLoading: _isLoading,
               ),
               const SizedBox(height: 24),
             ],

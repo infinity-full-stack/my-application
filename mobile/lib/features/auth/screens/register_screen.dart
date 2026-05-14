@@ -38,8 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Ro\'yxatdan o\'tdingiz! Endi kiring.'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.secondary,
         ));
         context.go('/login');
       }
@@ -51,7 +50,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ? 'Bu email allaqachon ro\'yxatdan o\'tgan'
               : 'Xatolik yuz berdi'),
           backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
         ));
       }
     }
@@ -59,51 +57,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final surf = Theme.of(context).colorScheme.surface;
+    final txt = Theme.of(context).colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
-              const SizedBox(height: 48),
-              // Logo
+              const SizedBox(height: 52),
+
+              // ── Logo ──────────────────────────────────────────────────
               Container(
-                width: 80, height: 80,
+                width: 84, height: 84,
                 decoration: BoxDecoration(
                   gradient: AppTheme.primaryGradientVertical,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.35),
-                      blurRadius: 20, offset: const Offset(0, 8),
+                      color: AppTheme.primary.withValues(alpha: 0.4),
+                      blurRadius: 24, offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: const Icon(Icons.document_scanner_rounded,
-                    color: Colors.white, size: 38),
+                    color: Colors.white, size: 40),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               ShaderMask(
-                shaderCallback: (b) =>
-                    AppTheme.primaryGradient.createShader(b),
+                shaderCallback: (b) => AppTheme.primaryGradient.createShader(b),
                 child: const Text('Master Scan',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800,
-                        color: Colors.white, letterSpacing: -0.5)),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800,
+                        color: Colors.white, letterSpacing: -0.8)),
               ),
-              const Text('AI Avto Ehtiyot Qismlar Bozori',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-              const SizedBox(height: 32),
+              const SizedBox(height: 4),
+              Text('AI Avto Ehtiyot Qismlar Bozori',
+                  style: TextStyle(color: txtSec, fontSize: 14)),
+              const SizedBox(height: 36),
 
-              // Form karta
+              // ── Form ──────────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: surf,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 20, offset: const Offset(0, 4)),
+                  border: Border.all(color: brd),
+                  boxShadow: isDark ? [] : [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.07),
+                      blurRadius: 24, offset: const Offset(0, 6),
+                    ),
                   ],
                 ),
                 child: Form(
@@ -111,45 +120,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Ro\'yxatdan o\'tish',
+                      Text('Ro\'yxatdan o\'tish',
                           style: TextStyle(fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.textPrimary)),
-                      const Text('Yangi hisob yarating',
-                          style: TextStyle(color: AppTheme.textSecondary,
-                              fontSize: 13)),
-                      const SizedBox(height: 20),
-                      _label('To\'liq ism'),
+                              fontWeight: FontWeight.w800, color: txt)),
+                      Text('Yangi hisob yarating',
+                          style: TextStyle(color: txtSec, fontSize: 13)),
+                      const SizedBox(height: 22),
+
+                      _label('To\'liq ism', txt),
                       TextFormField(
                         controller: _nameCtrl,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                            hintText: 'Ismingizni kiriting'),
+                        style: TextStyle(color: txt),
+                        decoration: InputDecoration(
+                          hintText: 'Ismingizni kiriting',
+                          prefixIcon: Icon(Icons.person_outline_rounded,
+                              color: isDark ? AppTheme.darkTextSecondary
+                                  : AppTheme.textSecondary, size: 20),
+                        ),
                         validator: (v) =>
                             v == null || v.isEmpty ? 'Majburiy' : null,
                       ),
                       const SizedBox(height: 14),
-                      _label('Email'),
+
+                      _label('Email', txt),
                       TextFormField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                            hintText: 'email@example.com'),
+                        style: TextStyle(color: txt),
+                        decoration: InputDecoration(
+                          hintText: 'email@example.com',
+                          prefixIcon: Icon(Icons.email_outlined,
+                              color: isDark ? AppTheme.darkTextSecondary
+                                  : AppTheme.textSecondary, size: 20),
+                        ),
                         validator: (v) => v == null || !v.contains('@')
                             ? 'To\'g\'ri email kiriting' : null,
                       ),
                       const SizedBox(height: 14),
-                      _label('Parol'),
+
+                      _label('Parol', txt),
                       TextFormField(
                         controller: _passCtrl,
                         obscureText: _obscure,
+                        style: TextStyle(color: txt),
                         decoration: InputDecoration(
                           hintText: '••••••••',
+                          prefixIcon: Icon(Icons.lock_outline_rounded,
+                              color: isDark ? AppTheme.darkTextSecondary
+                                  : AppTheme.textSecondary, size: 20),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscure
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                                size: 20, color: AppTheme.textSecondary),
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 20,
+                              color: isDark ? AppTheme.darkTextSecondary
+                                  : AppTheme.textSecondary),
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
                           ),
@@ -157,9 +184,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         validator: (v) => v == null || v.length < 6
                             ? 'Kamida 6 ta belgi' : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
                       GradientButton(
                         text: 'Ro\'yxatdan o\'tish',
+                        icon: Icons.person_add_rounded,
                         onPressed: _isLoading ? null : _register,
                         isLoading: _isLoading,
                       ),
@@ -167,12 +195,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Hisobingiz bormi? ',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+                  Text('Hisobingiz bormi? ',
+                      style: TextStyle(color: txtSec)),
                   GestureDetector(
                     onTap: () => context.go('/login'),
                     child: ShaderMask(
@@ -185,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
             ],
           ),
         ),
@@ -193,10 +221,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _label(String text) => Padding(
+  Widget _label(String text, Color txt) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: Text(text,
-        style: const TextStyle(fontWeight: FontWeight.w600,
-            fontSize: 13, color: AppTheme.textPrimary)),
+        style: TextStyle(fontWeight: FontWeight.w600,
+            fontSize: 13, color: txt)),
   );
 }

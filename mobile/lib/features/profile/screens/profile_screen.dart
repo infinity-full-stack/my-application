@@ -16,52 +16,69 @@ class ProfileScreen extends ConsumerWidget {
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
     final name = user?['name'] as String? ?? 'Foydalanuvchi';
     final email = user?['email'] as String? ?? '';
+    final theme = Theme.of(context);
+    final surf = theme.colorScheme.surface;
+    final txt = theme.colorScheme.onSurface;
+    final txtSec = isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary;
+    final brd = isDark ? AppTheme.darkBorder : AppTheme.border;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header gradient
+            // ── Header ──────────────────────────────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 28),
+              padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
               decoration: const BoxDecoration(
                 gradient: AppTheme.primaryGradientVertical,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
               ),
               child: Column(
                 children: [
                   Container(
-                    width: 72, height: 72,
+                    width: 80, height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4), width: 2.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(name[0].toUpperCase(),
-                          style: const TextStyle(fontSize: 28,
-                              fontWeight: FontWeight.w700, color: Colors.white)),
+                          style: const TextStyle(fontSize: 30,
+                              fontWeight: FontWeight.w800, color: Colors.white)),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(name, style: const TextStyle(fontSize: 20,
-                      fontWeight: FontWeight.w700, color: Colors.white)),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 14),
+                  Text(name, style: const TextStyle(fontSize: 22,
+                      fontWeight: FontWeight.w800, color: Colors.white,
+                      letterSpacing: -0.3)),
+                  const SizedBox(height: 3),
                   Text(email, style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
-                  const SizedBox(height: 10),
+                      color: Colors.white.withValues(alpha: 0.75), fontSize: 13)),
+                  const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3)),
                     ),
                     child: Text(
-                      isAdmin ? 'Admin' : 'Foydalanuvchi',
+                      isAdmin ? '⚡ Admin' : '👤 Foydalanuvchi',
                       style: const TextStyle(color: Colors.white,
                           fontWeight: FontWeight.w600, fontSize: 12),
                     ),
@@ -69,33 +86,37 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Admin
+                  // ── Admin ──────────────────────────────────────────────
                   if (isAdmin) ...[
-                    _sectionTitle('ADMIN'),
+                    SectionHeader(title: 'ADMIN'),
+                    const SizedBox(height: 10),
                     _MenuItem(
                       icon: Icons.admin_panel_settings_rounded,
                       label: 'Admin Panel',
-                      gradient: const LinearGradient(
-                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)]),
+                      subtitle: 'Boshqaruv markazi',
+                      gradient: AppTheme.roseGradient,
+                      surf: surf, txt: txt, brd: brd,
                       onTap: () => context.push('/admin'),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                   ],
 
-                  // Xizmatlar
-                  _sectionTitle('XIZMATLAR'),
+                  // ── Xizmatlar ──────────────────────────────────────────
+                  SectionHeader(title: 'XIZMATLAR'),
+                  const SizedBox(height: 10),
                   _MenuItem(
                     icon: Icons.storefront_rounded,
                     label: 'Do\'kon / Ustaxona qo\'shish',
                     subtitle: 'Yangi joyni ro\'yxatga oling',
                     gradient: AppTheme.primaryGradientVertical,
+                    surf: surf, txt: txt, brd: brd,
                     onTap: () => context.push('/add-store'),
                   ),
                   const SizedBox(height: 8),
@@ -104,72 +125,85 @@ class ProfileScreen extends ConsumerWidget {
                     label: 'Skaner tarixi',
                     subtitle: 'Skanerlangan qismlar',
                     gradient: const LinearGradient(
-                        colors: [Color(0xFF7C3AED), Color(0xFF9333EA)]),
+                        colors: [Color(0xFF8B5CF6), Color(0xFFA855F7)]),
+                    surf: surf, txt: txt, brd: brd,
                     onTap: () => context.push('/scan-history'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Navigatsiya
-                  _sectionTitle('NAVIGATSIYA'),
-                  _NavItem(
-                    icon: Icons.store_rounded,
-                    label: 'Do\'konlar',
-                    onTap: () => context.go('/stores'),
-                  ),
-                  _NavItem(
-                    icon: Icons.search_rounded,
-                    label: 'Ehtiyot qismlar',
-                    onTap: () => context.go('/parts'),
-                  ),
-                  _NavItem(
-                    icon: Icons.location_on_rounded,
-                    label: 'Yaqin do\'konlar',
-                    onTap: () => context.go('/map'),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Sozlamalar
-                  _sectionTitle('SOZLAMALAR'),
+                  // ── Navigatsiya ────────────────────────────────────────
+                  SectionHeader(title: 'NAVIGATSIYA'),
+                  const SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.border),
+                      color: surf,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: brd),
+                    ),
+                    child: Column(
+                      children: [
+                        _NavTile(icon: Icons.store_rounded, label: 'Do\'konlar',
+                            txt: txt, txtSec: txtSec, brd: brd,
+                            onTap: () => context.go('/stores')),
+                        Divider(height: 1, color: brd, indent: 56),
+                        _NavTile(icon: Icons.search_rounded, label: 'Ehtiyot qismlar',
+                            txt: txt, txtSec: txtSec, brd: brd,
+                            onTap: () => context.go('/parts')),
+                        Divider(height: 1, color: brd, indent: 56),
+                        _NavTile(icon: Icons.location_on_rounded, label: 'Yaqin do\'konlar',
+                            txt: txt, txtSec: txtSec, brd: brd,
+                            onTap: () => context.go('/map'), isLast: true),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Sozlamalar ─────────────────────────────────────────
+                  SectionHeader(title: 'SOZLAMALAR'),
+                  const SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: surf,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: brd),
                     ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
                       leading: Container(
-                        width: 36, height: 36,
+                        width: 38, height: 38,
                         decoration: BoxDecoration(
-                          color: AppTheme.warning.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
+                          gradient: AppTheme.amberGradient,
+                          borderRadius: BorderRadius.circular(11),
                         ),
                         child: Icon(
                           isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                          color: AppTheme.warning, size: 20,
+                          color: Colors.white, size: 20,
                         ),
                       ),
                       title: Text(isDark ? 'Tungi rejim' : 'Kunduzgi rejim',
-                          style: const TextStyle(fontWeight: FontWeight.w500,
-                              color: AppTheme.textPrimary)),
+                          style: TextStyle(fontWeight: FontWeight.w600,
+                              color: txt, fontSize: 14)),
+                      subtitle: Text(isDark ? 'Qorong\'u ko\'rinish' : 'Yorug\' ko\'rinish',
+                          style: TextStyle(color: txtSec, fontSize: 12)),
                       trailing: Switch(
                         value: isDark,
                         onChanged: (_) => ref.read(themeProvider.notifier).toggle(),
-                        activeColor: AppTheme.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Chiqish
+                  // ── Chiqish ────────────────────────────────────────────
                   GestureDetector(
                     onTap: () => ref.read(authProvider.notifier).logout(),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        color: AppTheme.error.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(14),
+                        color: AppTheme.error.withValues(alpha: isDark ? 0.12 : 0.06),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                            color: AppTheme.error.withValues(alpha: 0.2)),
+                            color: AppTheme.error.withValues(alpha: 0.25)),
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -179,12 +213,12 @@ class ProfileScreen extends ConsumerWidget {
                           SizedBox(width: 8),
                           Text('Chiqish',
                               style: TextStyle(color: AppTheme.error,
-                                  fontWeight: FontWeight.w600)),
+                                  fontWeight: FontWeight.w700, fontSize: 15)),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -193,13 +227,6 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _sectionTitle(String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Text(t, style: const TextStyle(fontSize: 11,
-        fontWeight: FontWeight.w700, color: AppTheme.textSecondary,
-        letterSpacing: 1)),
-  );
 }
 
 class _MenuItem extends StatelessWidget {
@@ -208,9 +235,13 @@ class _MenuItem extends StatelessWidget {
   final String? subtitle;
   final LinearGradient gradient;
   final VoidCallback onTap;
+  final Color surf, txt, brd;
 
-  const _MenuItem({required this.icon, required this.label,
-      required this.gradient, required this.onTap, this.subtitle});
+  const _MenuItem({
+    required this.icon, required this.label, required this.gradient,
+    required this.onTap, required this.surf, required this.txt,
+    required this.brd, this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -219,35 +250,32 @@ class _MenuItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.border),
+          color: surf,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: brd),
         ),
         child: Row(
           children: [
-            Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
+            IconBox(icon: icon, gradient: gradient, size: 46, iconSize: 22),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary)),
+                  Text(label, style: TextStyle(fontWeight: FontWeight.w700,
+                      color: txt, fontSize: 14)),
                   if (subtitle != null)
-                    Text(subtitle!, style: const TextStyle(fontSize: 12,
-                        color: AppTheme.textSecondary)),
+                    Text(subtitle!, style: TextStyle(fontSize: 12,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppTheme.darkTextSecondary
+                            : AppTheme.textSecondary)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: AppTheme.textSecondary),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppTheme.darkTextSecondary
+                    : AppTheme.textSecondary),
           ],
         ),
       ),
@@ -255,34 +283,41 @@ class _MenuItem extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _NavTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color txt, txtSec, brd;
+  final bool isLast;
 
-  const _NavItem({required this.icon, required this.label, required this.onTap});
+  const _NavTile({
+    required this.icon, required this.label, required this.onTap,
+    required this.txt, required this.txtSec, required this.brd,
+    this.isLast = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+      borderRadius: BorderRadius.circular(isLast ? 0 : 0),
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.border),
-        ),
         child: Row(
           children: [
-            Icon(icon, color: AppTheme.textSecondary, size: 20),
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, color: AppTheme.primary, size: 17),
+            ),
             const SizedBox(width: 14),
             Expanded(child: Text(label,
-                style: const TextStyle(fontWeight: FontWeight.w500,
-                    color: AppTheme.textPrimary))),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: AppTheme.textSecondary),
+                style: TextStyle(fontWeight: FontWeight.w500,
+                    color: txt, fontSize: 14))),
+            Icon(Icons.arrow_forward_ios_rounded, size: 13, color: txtSec),
           ],
         ),
       ),
