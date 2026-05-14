@@ -81,57 +81,6 @@ async def identify_part_from_image(image_bytes: bytes) -> ScanResult:
     except Exception as e:
         print(f"[AI ERROR] {type(e).__name__}: {e}")
         return _error_result("AI xizmatida xatolik yuz berdi.")
-            response = await client.post(
-                GROQ_URL,
-                headers={
-                    "Authorization": f"Bearer {settings.GROQ_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": GROQ_MODEL,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": PROMPT},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/jpeg;base64,{image_b64}"
-                                    },
-                                },
-                            ],
-                        }
-                    ],
-                    "max_tokens": 400,
-                    "temperature": 0.1,
-                },
-            )
-
-        if response.status_code != 200:
-            print(f"[AI ERROR] {response.status_code}: {response.text[:200]}")
-            return _error_result("AI xizmatida xatolik. Keyinroq urinib ko'ring.")
-
-        content = response.json()["choices"][0]["message"]["content"].strip()
-
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0].strip()
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0].strip()
-
-        result = json.loads(content)
-        return ScanResult(
-            part_name=result.get("part_name", "Noma'lum"),
-            description=result.get("description", ""),
-            category=result.get("category", "Boshqa"),
-            confidence_score=float(result.get("confidence_score", 0.5)),
-        )
-
-    except json.JSONDecodeError:
-        return _error_result("AI javobini o'qib bo'lmadi. Qayta urinib ko'ring.")
-    except Exception as e:
-        print(f"[AI ERROR] {e}")
-        return _error_result("AI xizmatida xatolik yuz berdi.")
 
 
 def _error_result(msg: str) -> ScanResult:
