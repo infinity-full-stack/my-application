@@ -1,17 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.core.database import create_tables
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.core.database import create_tables, get_db
 from app.routers import auth, scan, stores, parts, maps
 from app.admin.router import router as admin_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables
     await create_tables()
     yield
-    # Shutdown
 
 
 app = FastAPI(
@@ -21,7 +21,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,7 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(auth.router)
 app.include_router(scan.router)
 app.include_router(stores.router)
@@ -44,15 +42,14 @@ async def root():
     return {"message": "Master Scan API is running", "version": "1.0.0"}
 
 
-@router.get("/health")
+@app.get("/health")
 async def health():
     return {"status": "ok"}
 
 
-@router.post("/api/setup-admin")
+@app.post("/api/setup-admin")
 async def setup_admin(email: str, db: AsyncSession = Depends(get_db)):
-    """One-time endpoint to make a user admin"""
-    from sqlalchemy import select
+    """One-time: make a user admin by email"""
     from app.models.user import User, UserRole
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
